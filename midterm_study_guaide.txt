@@ -1,0 +1,356 @@
+--/-----------------------------------------------------------------------------------/-- 
+1. What does the NameNode of a Hadoop cluster use RAM for?
+        a. To store data.
+
+    +   b. To store filenames, list of blocks and other metadata.
+
+        c. To store blocks.
+        d. To store intermediate data
+
+--/-----------------------------------------------------------------------------------/-- 
+2. A client application creates an HDFS file named foo.txt with a replication factor of 3. Identify
+which best describes the file access rules in HDFS if the file has a single block that is stored on data
+nodes A, B and C?
+        a. The file can be accessed if all DataNodes storing the block are available.
+
+    +   b. The file can be accessed if at least one of the DataNodes storing the block is available.
+
+        c. The file cannot be accessed even though one of the DataNodes storing the block is available.
+        d. The file can be accessed even though any DataNodes does not have the block.
+
+--/-----------------------------------------------------------------------------------/-- 
+3. What is the default path of Hive table named “sales” at HDFS?
+        a. /hive/datawarehouse/sales
+
+    +   b. /user/hive/warehouse/sales
+
+        c. Hive and HDFS are not related as Hive relates to MapReduce
+        d. There is no default path in HDFS
+
+--/-----------------------------------------------------------------------------------/-- 
+4. You have a table named “singers” with a column named singer_name and its value is “Camila
+Cabello” when its column “singer_id” is 3. What should be the result of the following HiveQL query?
+SELECT SUBSTRING(singer_name, 1, 4) FROM singer where singer_id = 3;
+        a. Camila Cabello
+        b. NULL
+
+    +   c. Cami
+
+        d. amil
+
+--/-----------------------------------------------------------------------------------/-- 
+5. You want to see the content of the file named “1091.log” at your default HDFS directory. And, your
+user name is tom. What is the hdfs command to see the content of the file?
+
+NameNode works as a Master in a Hadoop cluster that guides the Datanode(Slaves). 
+Namenode is mainly used for storing the Metadata i.e. the data about the data. 
+Meta Data can be the transaction logs that keep track of the user’s activity in a Hadoop cluster. 
+    +   a. hdfs dfs -cat 1091.log
+
+        b. dfs -ls 1091.log
+        c. ls 1091.log
+        d. hdfs dfs -put 1091.log 1091.log
+
+--/-----------------------------------------------------------------------------------/-- 
+6. Figure 1 illustrates HDFS with three racks. Each rack is located at a place and composes of several
+nodes. Which node is the master node?
+    +   a. Node n1 of rack1
+
+        b. Node n1 of rack2
+        c. Node n3 of rack2
+        d. Node n4 of rack3
+
+--/-----------------------------------------------------------------------------------/--
+7. Assuming data node is composed of blocks in 64MB as standard files in Figure 1. If a file is 96MB,
+how it can be stored in the blocks in HDFS?
+        a. Three 32MB blocks
+        b. Two 64MB blocks
+        c. One 96MB block
+
+      If a file is 96MB, it will be divided into two blocks: the first block will be 64MB, 
+      and the remaining 32MB will be stored in a second block.  
+    +   d. One 64MB block and one 32MB block
+
+--/-----------------------------------------------------------------------------------/--
+8. Consider the following table named CUSTOMERS and ORDERS tables.
+
+Inner join
+An inner join using either of the equivalent queries gives the intersection of the two tables, 
+i.e. the two rows they have in common.
+
+Left outer join
+A left outer join will give all rows in A, plus any common rows in B.
+
+Right outer join
+A right outer join will give all rows in B, plus any common rows in A.
+
+Full outer join
+A full outer join will give you the union of A and B, i.e. all the rows 
+in A and all the rows in B. If something in A doesn't have a corresponding datum in B, 
+then the B portion is null, and vice versa.
+
+    +   a. LEFT OUTER
+
+        b. RIGHT OUTER
+        c. FULL OUTER
+        d. Empty, which means INNER JOIN
+
+
+--/-----------------------------------------------------------------------------------/--
+9. In order to get to see the following response, what should be [?] in the HiveQL for CUSTOMERS
+and ORDERS tables?:
+d. CROSS JOIN
+
+--/-----------------------------------------------------------------------------------/--
+10. When you created “example” table in Hive, what should be the path of the table in HDFS? Your
+user name is cis520.
+        a. /user/root/hive/example/
+        b. /user/cis520/hive/example/
+        c. Anywhere in HDFS
+
+    +   d. /user/hive/warehouse/example/
+
+--/-----------------------------------------------------------------------------------/--
+11. When example file in Hive has the following data with (id, animal, shape, color) columns, what is
+the result of “SELECT id FROM example WHERE animal = "bee";”
+        10,bee,sphere,black
+        20,bee,disc,white
+        30,cat,ball,red
+        40,dog,cube,green
+        50,dog,sphere,blue
+        60,fish,cone,black
+        70,cat,ball,red
+
+        a. Error message will be shown
+        b. 20
+        c. 10
+
+    +   d. 10 and 20
+
+--/-----------------------------------------------------------------------------------/--
+12. Which is not the traditional Large-Scale computation?
+    +   a. It is a processor-bound
+
+        b. It has relatively large amounts of data to process
+        c. Its processing is normally very complicated
+        d. Its data is copied to the compute nodes at compute time.
+
+--/-----------------------------------------------------------------------------------/--
+13. Which company developed the HiveQL platform and programming language?
+        a. Microsoft
+        b. Oracle
+
+    +   c. Facebook
+
+        d. Yahoo
+
+--/-----------------------------------------------------------------------------------/--
+14. How you can exit from Hive CLI and see the terminal where you ran Hive without closing the
+terminal?
+        a. press “control + C” key
+        b. press ESC key
+
+    +   c. press “control + D” key
+
+        d. There is no way to exit Hive CLI
+--/-----------------------------------------------------------------------------------/--
+15. You need to process input data in the form of tab-delimited text files. Each file contains two
+columns and both of these contain string values. You want use an “InputFormat” that adopts the text
+data. Which of the following is the most appropriate “InputFormat” should you use?
+        a. SequenceInputFormat
+
+    +   b. KeyValueTextInputFormat
+
+        c. TextInputFormat
+        d. SequenceTextInputFormat
+--/-----------------------------------------------------------------------------------/--
+16. You are running a job that will process a single input split on a cluster which has no other jobs
+currently running, and with all settings at their default values. Each node has an equal number of
+open Map slots. On which node will Hadoop first attempt to run the Map task?
+
+        a. The node containing the first NodeManager to heartbeat into the ResourceManager, regardless of
+            the location of the input split
+        b. The node containing the ResourceManager closest to the DataNode where the input split is stored
+
+    +   c. The node containing the NodeManager closest to the DataNode where the input split is stored
+
+        d. The node containing the first DataNode to heartbeat into the NameNode, regardless of the location
+            of the input split
+--/-----------------------------------------------------------------------------------/--
+17. What is the Master Node of MapReduce of Hadoop 2?
+        a. Application Master.
+
+    +   b. Resource Manager.
+
+        c. Name Node.
+        d. Node Manager
+
+--/-----------------------------------------------------------------------------------/--
+18. The Hadoop framework provides a mechanism for coping with machine issues such as faulty
+configuration or impending hardware failure. The ResourceManager detects that one or a number of
+machines are performing poorly and starts more copies of a map or reduce task. What is the feature
+called where all the tasks run simultaneously and the task that finish first are used?
+        a. Cluster
+        b. Replication
+        c. Fault Tolerance
+
+    +   d. Speculative Execution
+
+--/-----------------------------------------------------------------------------------/--
+19. You have created and populated a table “example” in Hive. What HiveQL “?” will display the
+following schema structure:
+hive> ?
+OK
+id int
+animal string
+shape string
+color string
+        a. Visualize schema example;
+        b. display example;
+        c. show example;
+
+    +   d. describe example;
+
+--/-----------------------------------------------------------------------------------/--
+20. How does Hadoop MapReduce handle JVMs when a new MapReduce job is started on a cluster?
+        a. The ResourceManager spawns a new JVM for each task it manages on that node
+
+- In Hadoop MapReduce, the **NodeManager** is responsible for managing the execution of tasks on a node. 
+When a new MapReduce job is started, the NodeManager spawns a new Java Virtual Machine (JVM) for each 
+task it is responsible for running. This allows each task to run in isolation, providing fault tolerance 
+and resource management.
+    +   b. The NodeManager spawns a new JVM for each task it manages on that node
+
+        c. The NodeManager uses an existing JVM which manages the existing task on that node
+        d. The NodeManager does not use any JVM on that node
+
+--/-----------------------------------------------------------------------------------/--
+21. You need to create a GUI application to help your company’s sales people add and edit customer
+information. Your plan is to maintain the customer information in a flat CSV file. Would HDFS be
+appropriate for this customer information file?
+        a. No, because HDFS is optimized for transaction operations for relatively large files.
+
+HDFS (Hadoop Distributed File System) is designed for high-throughput access to large datasets and is 
+optimized for write-once and read-many access patterns. It is not suitable for applications that 
+require frequent updates, transactions, or small files, like a GUI application for adding and 
+editing customer information, which would typically involve random access and real-time updates. 
+Using a traditional database or file system would be more appropriate in this case.
+    +   b. No, because HDFS is optimized for write-once, streaming access for relatively large files.
+
+        c. Yes, because HDFS is optimized for write-once, streaming access for relatively large files.
+        d. Yes, because HDFS is optimized for transaction operations for relatively large files.
+
+--/-----------------------------------------------------------------------------------/--
+22. Does the MapReduce programming model provide a way for reduce tasks to communicate with
+each other?
+        a. Yes, each reduce task runs and communicates with other reduce tasks
+        b. No, each reduce task runs and communicates with other map tasks
+
+In the MapReduce programming model, each reduce task operates independently and does not 
+communicate with other reduce tasks. This isolation is a fundamental aspect of the MapReduce 
+paradigm, which allows for parallel processing and scalability. The output of the map tasks 
+is fed into the reduce tasks, but there is no direct communication or dependency between 
+the reduce tasks themselves. Each reduce task processes its assigned data independently.
+    +   c. No, each reduce task runs independently and in isolation
+
+        d. No, each reduce task runs and communicates with other Name node
+
+--/-----------------------------------------------------------------------------------/--
+23. What describes the relationship between MapReduce and Hive?
+
+        Hive is a data warehousing tool built on top of Hadoop that provides a SQL-like interface to query 
+        and manage large datasets. When you write queries in Hive, they are translated into MapReduce 
+        jobs (or sometimes other execution engines like Apache Tez or Spark) that run on Hadoop. 
+        Thus, Hive effectively acts as a higher-level abstraction over the MapReduce programming model, 
+        but it does not provide additional capabilities to MapReduce itself; it uses MapReduce 
+        to execute queries.
+    
+    +   a. Hive provides no additional capabilities to MapReduce. Hive programs are executed as MapReduce jobs via
+            the Hive interpreter.
+
+        b. Hive is made by Yahoo
+        c. Hive is data flow language based.
+        d. Hive converts Hive codes to Java MapReduce codes
+
+--/-----------------------------------------------------------------------------------/--
+24. The cluster block size is set to 128MB. The input file contains 260MB of valid input data and is
+loaded into HDFS with the default block size. How many map tasks will be run during the execution
+of this job?
+        a. 2
+
+    +   b. 3
+
+        c. 1
+        d. The job fails
+
+--/-----------------------------------------------------------------------------------/--
+25. You have the following key-value pairs as output from your Map task. How many input
+key-values pairs are for reducer(s):
+(red, 1)
+(apple, 1)
+(green, 1)
+(apple, 1)
+(golden, 1)
+(apple, 1)
+        a. 3
+
+    +   b. 4
+
+        c. 5
+        d. 6
+
+--/-----------------------------------------------------------------------------------/--
+26. What data is provided to the reduce()method of a reducer?
+        a. The reduce() method is given a (key, value) pair
+        b. The reduce() method is given an iterator over all available values from any key
+
+    +   c. The reduce() method is given a single key and an iterator over all available values for that key
+
+        d. The reduce() method is given a single key and a value for that key
+
+--/-----------------------------------------------------------------------------------/--
+27. Assuming typical disk data transfer rate is 75MB/sec, approximately how long it takes to transfer
+100GB of data to the processor?
+b. 22 minutes
+
+--/-----------------------------------------------------------------------------------/--
+28. Which is not the core Hadoop concepts?
+    +   a. Developers need to worry about network programming, temporal dependencies or low-level infra-
+        tructure
+
+b. Developers should not write code which communicates between nodes
+c. Data is spread among machines in advance
+d. Data is replicated multiple times on the system for increased availability and reliability
+
+--/-----------------------------------------------------------------------------------/--
+29. In Hadoop, data is loaded into systems as ‘blocks’. How big it is typically?
+    + d. 64MB or 128MB
+
+--/-----------------------------------------------------------------------------------/--
+30. Which is not correct in Hadoop Fault Tolerance?
+    +   b. Restarting a task requires communication with nodes working on other portions of the data
+
+--/-----------------------------------------------------------------------------------/--
+31. Which is not true in Hadoop?
+    +   c. A Hadoop cluster can have only one node
+
+--/-----------------------------------------------------------------------------------/--
+32. In the following answers, which is not true in MapReduce?
+    +   a. MapReduce is the system used to store data in the Hadoop cluster
+
+This statement is not true because MapReduce is not a system for storing data; 
+it is a programming model and processing framework used to perform computations 
+on large datasets in a distributed manner. Data is stored in Hadoop's storage system, 
+HDFS (Hadoop Distributed File System), not in MapReduce itself.
+
+--/-----------------------------------------------------------------------------------/--
+33. From the following answers, which is not true about the basic concepts of HDFS?
+
+    +   b. Provides redundant storage for massive amounts of data using expensive special computers.
+
+This statement is not true because HDFS is designed to provide redundant storage using 
+commodity hardware rather than expensive special computers. One of the key features of 
+HDFS is its ability to run on low-cost, standard servers, which makes it cost-effective 
+for storing massive amounts of data.
+
+--/-----------------------------------------------------------------------------------/--

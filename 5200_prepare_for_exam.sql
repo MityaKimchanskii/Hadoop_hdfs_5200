@@ -343,3 +343,10 @@ cat log_result.out
 scp dkim171@129.146.230.230:/home/dkim171/log_result.out .
 --/----------------------------The end of the Lab 3-----------------------------------/-- 
 
+
+-- The `hdfs dfs -cat` command is used to display the contents of a file in HDFS. 
+    -- Since the file "1091.log" is in your default HDFS directory, this command will show its contents.
+hdfs dfs -cat 1091.log
+
+
+
