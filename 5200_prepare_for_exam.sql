@@ -348,5 +348,86 @@ scp dkim171@129.146.230.230:/home/dkim171/log_result.out .
     -- Since the file "1091.log" is in your default HDFS directory, this command will show its contents.
 hdfs dfs -cat 1091.log
 
+--/-----------------------------------------------------------------------------------/-- 
+--/--------------------------------------Lab4-----------------------------------------/-- 
+--/-----------------------------------------------------------------------------------/-- 
+-- 1. The ssh command to connect to the Hadoop Spark cluster. 
+ssh dkim171@129.146.230.230
 
 
+wget -O time_zone_map.tsv https://github.com/dalgual/aidatasci/raw/master/data/bigdata/time_zone_map.tsv
+wget -O dictionary.tsv https://github.com/dalgual/aidatasci/raw/master/data/bigdata/dictionary.tsv
+wget -O minion_tweets.tar.gz https://github.com/dalgual/aidatasci/raw/master/data/bigdata/minion_tweets.tar.gz
+
+
+ls -al -- check if the file was downloaded successfully
+
+tar -zxvf minion_tweets.tar.gz -- unzip minion_tweets.tar.gz
+
+ls Tweets/
+
+ls
+
+hdfs dfs -mkdir tmp
+hdfs dfs -mkdir tmp/tweets_staging
+hdfs dfs -ls tmp
+hdfs dfs -put Tweets/* tmp/tweets_staging
+hdfs dfs -ls tmp/tweets_staging
+
+hdfs dfs -mkdir tmp/data
+hdfs dfs -mkdir tmp/data/tables
+
+hdfs dfs -mkdir tmp/data/tables/time_zone_map
+hdfs dfs -mkdir tmp/data/tables/dictionary
+hdfs dfs -ls tmp/data/tables
+
+hdfs dfs -put time_zone_map.tsv tmp/data/tables/time_zone_map/
+hdfs dfs -put dictionary.tsv tmp/data/tables/dictionary/
+hdfs dfs -ls tmp/data/tables/time_zone_map/
+hdfs dfs -ls tmp/data/tables/dictionary
+
+
+use dkim171;
+CREATE EXTERNAL TABLE IF NOT EXISTS raw_tweets(json_response STRING)
+STORED AS TEXTFILE
+LOCATION "/user/dkim171/tmp/tweets_staging";
+
+
+show tables;
+
+CREATE TABLE IF NOT EXISTS tweets_text (
+id BIGINT,
+created_at STRING,
+created_at_date STRING,
+created_at_year STRING,
+created_at_month STRING,
+created_at_day STRING,
+created_at_time STRING,
+text STRING,
+time_zone STRING);
+
+FROM raw_tweets
+INSERT OVERWRITE TABLE tweets_text
+SELECT CAST(get_json_object(json_response, '$.id_str') as BIGINT),
+get_json_object(json_response, '$.created_at'),
+CONCAT(SUBSTR (get_json_object(json_response, '$.created_at'),1,10),
+' ',
+SUBSTR (get_json_object(json_response, '$.created_at'),27,4)),
+SUBSTR (get_json_object(json_response, '$.created_at'),27,4),
+CASE SUBSTR (get_json_object(json_response, '$.created_at'),5,3)
+WHEN 'Jan' then '01' WHEN 'Feb' then '02'
+WHEN 'Mar' then '03' WHEN 'Apr' then '04'
+WHEN 'May' then '05' WHEN 'Jun' then '06'
+WHEN 'Jul' then '07' WHEN 'Aug' then '08'
+WHEN 'Sep' then '09' WHEN 'Oct' then '10'
+WHEN 'Nov' then '11' WHEN 'Dec' then '12'
+end,
+SUBSTR (get_json_object(json_response, '$.created_at'),9,2),
+SUBSTR (get_json_object(json_response, '$.created_at'),12,8),
+get_json_object(json_response, '$.text'),
+get_json_object(json_response, '$.user.time_zone');
+
+select * from raw_tweets LIMIT 1;
+select * from tweets_text LIMIT 10;
+
+describe formatted tweets_text;
