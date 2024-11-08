@@ -371,7 +371,7 @@ ls
 hdfs dfs -mkdir tmp
 hdfs dfs -mkdir tmp/tweets_staging
 hdfs dfs -ls tmp
-hdfs dfs -put Tweets/* tmp/tweets_staging
+hdfs dfs -put Tweets/* tmp/tweets_staging     (*/)-- remove it 
 hdfs dfs -ls tmp/tweets_staging
 
 hdfs dfs -mkdir tmp/data
@@ -391,7 +391,6 @@ use dkim171;
 CREATE EXTERNAL TABLE IF NOT EXISTS raw_tweets(json_response STRING)
 STORED AS TEXTFILE
 LOCATION "/user/dkim171/tmp/tweets_staging";
-
 
 show tables;
 
@@ -431,3 +430,244 @@ select * from raw_tweets LIMIT 1;
 select * from tweets_text LIMIT 10;
 
 describe formatted tweets_text;
+
+DROP TABLE IF EXISTS time_zone_map;
+CREATE EXTERNAL TABLE if not exists time_zone_map (
+time_zone string,
+country string,
+notes string )
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '\t'
+STORED AS TEXTFILE
+LOCATION '/user/dkim171/tmp/data/tables/time_zone_map'
+TBLPROPERTIES ('skip.header.line.count'='1');
+
+select * from time_zone_map LIMIT 10;
+
+
+CREATE EXTERNAL TABLE if not exists dictionary (
+type string,
+length int,
+word string,
+pos string,
+stemmed string,
+polarity string )
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '\t'
+STORED AS TEXTFILE
+LOCATION '/user/dkim171/tmp/data/tables/dictionary';
+select * from dictionary LIMIT 10;
+
+
+Drop View IF EXISTS tweets_simple;
+CREATE VIEW IF NOT EXISTS tweets_simple AS
+SELECT
+id tweet_id,
+cast ( from_unixtime( unix_timestamp(
+concat( created_at_year, ' ', created_at_month, ' ',
+substring(created_at,9,11)), 'yyyy MM dd hh:mm:ss'))
+as timestamp) ts,
+text msg,
+time_zone
+FROM tweets_text;
+
+select * from tweets_simple LIMIT 10;
+
+CREATE VIEW IF NOT EXISTS tweets_clean AS
+SELECT
+t.tweet_id,
+t.ts,
+t.msg,
+m.country
+FROM tweets_simple t LEFT OUTER JOIN
+time_zone_map m ON t.time_zone = m.time_zone;
+
+select * from tweets_clean LIMIT 10;
+
+
+-- Create view l1 to compute sentiment
+create view IF NOT EXISTS l1 as
+select id, words
+from tweets_text
+lateral view explode(sentences(lower(text))) dummy as words;
+-- Create view l2 from l1 to compute sentiment
+create view IF NOT EXISTS l2 as
+select id, word
+from l1
+lateral view explode( words ) dummy as word;
+-- Create view l3 from l2 to compute sentiment
+create view IF NOT EXISTS l3 as select
+id tweet_id,
+l2.word,
+case d.polarity
+when 'negative' then -1
+when 'positive' then 1
+else 0 end as polarity
+from l2 left outer join dictionary d on l2.word = d.word;
+
+
+create table IF NOT EXISTS tweets_sentiment
+stored as orc as select
+tweet_id,
+case
+when sum( polarity ) > 0 then 'positive'
+when sum( polarity ) < 0 then 'negative'
+else 'neutral' end as sentiment
+from l3 group by tweet_id;
+
+select * from tweets_sentiment LIMIT 3;
+
+CREATE TABLE IF NOT EXISTS tweetsbi
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ","
+STORED AS TEXTFILE
+LOCATION "/user/dkim171/tmp/tweets_bi"
+AS SELECT
+t.*,
+case s.sentiment
+when 'positive' then 2
+when 'neutral' then 1
+when 'negative' then 0
+end as sentiment
+FROM tweets_clean t LEFT OUTER JOIN tweets_sentiment s
+on t.tweet_id = s.tweet_id;
+
+select * from tweetsbi LIMIT 3;
+
+--/-----------------------------------------------------------------------------------/-- 
+--/--------------------------------------Lab5-----------------------------------------/-- 
+--/-----------------------------------------------------------------------------------/-- 
+-- 1. The ssh command to connect to the Hadoop Spark cluster. 
+ssh dkim171@129.146.230.230
+
+CREATE EXTERNAL TABLE IF NOT EXISTS ratings (
+posted TIMESTAMP,
+cust_id INT,
+prod_id INT,
+rating TINYINT,
+message STRING
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '\t'
+LOCATION '/user/dkim171/ratings'; -- entire path: /user/jwoo5/ratings
+
+
+DESCRIBE ratings;
+
+wget https://github.com/dalgual/aidatasci/raw/master/data/bigdata/ratings_2012.txt
+
+hdfs dfs -mkdir ratings
+
+-bash-4.2$ hdfs dfs -put ratings_2012.txt ratings/
+
+-bash-4.2$ hdfs dfs -ls ratings/
+
+wget https://github.com/dalgual/aidatasci/raw/master/data/bigdata/ratings_2013.txt
+
+hdfs dfs -mkdir dualcore
+hdfs dfs -ls
+
+hdfs dfs -put ratings_2013.txt dualcore/
+
+hdfs dfs -ls dualcore
+
+LOAD DATA INPATH '/user/dkim171/dualcore/ratings_2013.txt' INTO TABLE ratings;
+
+SELECT COUNT(*) FROM ratings;
+
+
+--/-----------------------------------------------------------------------------------/-- 
+--/------------------------------------- Lab5 part2 ----------------------------------/-- 
+--/-----------------------------------------------------------------------------------/-- 
+
+wget https://github.com/dalgual/aidatasci/raw/master/data/bigdata/products.tsv
+
+hdfs dfs -mkdir products
+hdfs dfs -put products.tsv products/
+hdfs dfs -ls
+
+
+DROP TABLE IF EXISTS products;
+CREATE EXTERNAL TABLE products (
+prod_id INT,
+brand STRING,
+name STRING,
+price INT,
+cost INT,
+shipping_wt INT
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '\t'
+LOCATION 'products';
+
+DESCRIBE products;
+
+
+
+select * from products LIMIT 2;
+
+SELECT prod_id, FORMAT_NUMBER(avg_rating, 2) AS
+avg_rating
+    FROM (SELECT prod_id, AVG(rating) AS avg_rating,
+        COUNT(*) AS num
+        FROM ratings
+        GROUP BY prod_id) rated
+    WHERE num >= 50
+    ORDER BY avg_rating DESC
+LIMIT 1;
+
+
+SELECT prod_id, FORMAT_NUMBER(avg_rating, 2) AS
+avg_rating
+    FROM (SELECT prod_id, AVG(rating) AS avg_rating,
+        COUNT(*) AS num
+        FROM ratings
+        GROUP BY prod_id) rated
+    WHERE num >= 50
+    ORDER BY avg_rating ASC
+LIMIT 1;
+
+
+SELECT EXPLODE(NGRAMS(SENTENCES(LOWER(message)), 2, 5))
+AS bigrams
+FROM ratings
+WHERE prod_id = 1274673;
+
+
+SELECT message
+FROM ratings
+WHERE prod_id = 1274673
+AND message LIKE '%ten times more%'
+LIMIT 3;
+
+
+SELECT DISTINCT message
+FROM ratings
+WHERE prod_id = 1274673 AND message LIKE '%red%';
+
+
+SELECT * FROM products WHERE prod_id = 1274673;
+
+SELECT *
+FROM products
+WHERE name LIKE '%16 GB USB Flash Drive%'
+AND brand='"Orion"';
+
+
+-- test 1-gram in context_ngrams
+SELECT context_ngrams(sentences(LOWER(message)),
+array(null, null), 10) AS onegram FROM ratings;
+
+-- Add EXPLODE() function to make the result pretty
+SELECT EXPLODE(context_ngrams(sentences(LOWER(message)),
+array(null, null), 10)) AS onegram FROM ratings;
+
+-- test 2-gram in context_ngrams
+SELECT EXPLODE(context_ngrams(sentences(LOWER(message)),
+array(null, null), 10)) AS bigram FROM ratings;
+
+
+-- test 4-gram in context_ngrams that starts “red one”
+SELECT EXPLODE(context_ngrams(sentences(lower(message)),
+array("red", "one", null, null), 10)) AS snippet FROM
+ratings;
